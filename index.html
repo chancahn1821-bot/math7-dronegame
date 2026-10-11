@@ -5,9 +5,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}*,*::before,*::after{box-sizing:border-box}</style>
 <title>김포제일고 드론 배송</title>
+<!-- ▼ 교사 현황판 연결: 따옴표 안에 구글 Apps Script 웹 앱 주소(https://script.google.com/macros/s/…/exec)를 붙여넣으세요. 비워 두면 현황판 없이 동작해요. -->
+<script>window.SHEET_URL = "https://script.google.com/macros/s/AKfycbyEZveK-FDX9nq-WEiuHhVpQuxgEiPgtecU2CT08uASfZA5eRlG7o3TKlhe2TlAAQrC/exec";</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&family=Gowun+Batang:wght@400;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
 <style>
 /* Type: 둥글고 따뜻한 손맛 — 제목 Jua, 본문 Gowun Dodum, 좌표 숫자 IBM Plex Mono */
 /* Layout: 학교 관제 콘솔 — 왼쪽 3D 학교 디오라마, 오른쪽 미션 카드. 폰에서는 위아래로 쌓임 */
@@ -49,6 +51,16 @@ header{display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px;padding:12px
 #who{font-family:var(--f-body);color:var(--ink);font-weight:500}
 .ghost{border:1.5px solid var(--line);background:var(--panel);border-radius:8px;padding:5px 11px;font-size:13px;font-family:var(--f-body)}
 .ghost:hover{border-color:var(--ink)}
+.ghost:disabled{opacity:.45;cursor:not-allowed}
+#resultBtn:not(:disabled){background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
+.track{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;margin:0 16px 10px;padding:7px 14px;border:1px solid var(--line);border-radius:10px;background:var(--panel);font-size:13px;color:var(--muted)}
+.track b{font-weight:400}
+.track i{font-style:normal;font-family:var(--f-mono);font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
+.track .warn i{color:var(--bad)}
+.track .rec{margin-left:auto;color:var(--bad);font-size:12px}
+.track .rec.done{color:var(--ok)}
+.certwrap{width:100%;overflow:hidden;border-radius:6px;box-shadow:0 2px 14px rgba(0,0,0,.18)}
+.certwrap>.cert{transform-origin:0 0}
 .ghost[aria-pressed="true"]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
 
 main{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) clamp(320px,38vw,420px);gap:16px;padding:0 16px 16px}
@@ -148,6 +160,38 @@ form{display:flex;flex-wrap:wrap;gap:8px}
 .recinfo{background:var(--soft);border:1px dashed var(--line);border-radius:8px;padding:8px 10px;font-size:13px!important;color:var(--ink)!important}
 .err{background:var(--bad-bg);color:var(--bad);border-radius:8px;padding:8px 10px;font-size:14px}
 #report{position:fixed;left:-12000px;top:0;pointer-events:none}
+.cert{width:1123px;height:794px;box-sizing:border-box;position:relative;background:#FBF7EC;color:#1E2B33;font-family:"Gowun Batang","Gowun Dodum",serif;padding:30px;overflow:hidden}
+.cert .frame{position:absolute;inset:22px;border:3px solid #1F3A5A;border-radius:6px}
+.cert .frame2{position:absolute;inset:30px;border:1px solid #B08A3E;border-radius:3px}
+.cert .bgaxes{position:absolute;right:40px;bottom:40px;width:330px;opacity:.13}
+.cert .in{position:relative;height:100%;padding:26px 46px 22px;display:flex;flex-direction:column;gap:14px}
+.cert .top{display:flex;align-items:center;gap:18px;border-bottom:1.5px solid #1F3A5A;padding-bottom:12px}
+.cert .top img{width:74px;height:74px}
+.cert .top .tt{flex:1}
+.cert .top .en{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.32em;color:#8A6A2C}
+.cert .top h1{font-family:"Gowun Batang",serif;font-weight:700;font-size:44px;letter-spacing:.32em;margin:2px 0 0;line-height:1.1;color:#1F3A5A}
+.cert .top .no{text-align:right;font-size:12px;color:#55636c}
+.cert .top .no b{display:block;font-family:"IBM Plex Mono",monospace;font-size:15px;color:#1E2B33;letter-spacing:.04em}
+.cert .mid{display:grid;grid-template-columns:1.05fr 1fr;gap:22px}
+.cert table{border-collapse:collapse;width:100%;font-size:15px}
+.cert th,.cert td{border-bottom:1px solid #D9CFB8;padding:6px 6px;text-align:left}
+.cert th{width:96px;color:#6A5A3A;font-weight:400;font-size:13px;letter-spacing:.05em}
+.cert td{font-weight:700}
+.cert td.mono{font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:14px}
+.cert .cap{font-size:12px;letter-spacing:.2em;color:#8A6A2C;margin-bottom:4px}
+.cert .grade{font-family:"Jua",sans-serif;font-weight:400;font-size:21px;color:#B23A1A}
+.cert .ms{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.cert .m{border:1px solid #CDBF9F;border-radius:6px;padding:6px 6px 5px;text-align:center;background:#FFFDF6}
+.cert .m b{display:block;font-size:11px;font-weight:400;color:#6A5A3A;white-space:nowrap}
+.cert .m span{font-family:"Jua",sans-serif;font-size:20px;color:#1F3A5A}
+.cert .m small{display:block;font-size:10px;color:#8b7d62}
+.cert .stmt{flex:1;display:flex;align-items:center;justify-content:center;font-size:19px;line-height:1.8;text-align:center;margin:0}
+.cert .bot{display:flex;align-items:flex-end;justify-content:space-between}
+.cert .date{font-size:16px;letter-spacing:.1em}
+.cert .issuer{position:relative;font-size:21px;font-weight:700;letter-spacing:.12em;padding-right:58px;margin-right:30px}
+.cert .issuer small{display:block;font-size:13px;font-weight:400;letter-spacing:.08em;color:#55636c;margin-bottom:2px}
+.cert .issuer .in2{font-weight:400;color:#55636c}
+.cert .issuer img{position:absolute;right:-44px;top:-46px;width:118px;height:118px;transform:rotate(-8deg);opacity:.92}
 .rp{width:794px;height:1123px;box-sizing:border-box;padding:46px 52px 40px;background:#fff;color:#16232c;font-family:"Gowun Dodum","Apple SD Gothic Neo","Malgun Gothic",sans-serif;font-size:13px;line-height:1.55;display:flex;flex-direction:column}
 .rp-body{flex:1;display:flex;flex-direction:column;gap:14px;overflow:hidden}
 .rp-foot{display:flex;justify-content:space-between;font-size:11px;color:#6b7a84;border-top:1px solid #d5dde2;padding-top:8px}
@@ -195,10 +239,17 @@ form{display:flex;flex-wrap:wrap;gap:8px}
   <div class="meta">
     <span>점수 <b id="score">0</b></span>
     <span id="who">로그인 전</span>
-    <button class="ghost" id="resultBtn" type="button">결과·보고서</button>
+    <button class="ghost" id="resultBtn" type="button" disabled title="7개 미션을 모두 풀면 발급돼요">드론자격증 발급</button>
     <button class="ghost" id="switchBtn" type="button">학생 바꾸기</button>
   </div>
 </header>
+
+<div class="track" id="track" hidden aria-live="off">
+  <span><b>시작</b> <i id="tStart">--:--</i></span>
+  <span><b>걸린 시간</b> <i id="tElapsed">0분 00초</i></span>
+  <span id="tAwayWrap"><b>이탈</b> <i id="tAway">0회 · 0분 00초</i></span>
+  <span class="rec" id="tRec">● 기록 중</span>
+</div>
 
 <main>
   <section class="stage" id="stage">
@@ -245,15 +296,16 @@ form{display:flex;flex-wrap:wrap;gap:8px}
 </div>
 
 <div class="sheet" id="endSheet" hidden>
-  <div class="card">
-    <h3 id="rank">S급 조종사</h3>
-    <div class="big" id="total">0</div>
+  <div class="card" style="width:min(820px,100%)">
+    <h3>드론 자격증 발급</h3>
     <p id="endWho"></p>
-    <ul class="rows" id="rows"></ul>
-    <button class="go" id="pdfBtn" type="button">결과 보고서 PDF 받기</button>
+    <div class="certwrap" id="certPrev"></div>
+    <button class="go" id="pdfBtn" type="button">드론 자격증 PDF 받기</button>
     <p id="pdfMsg" hidden></p>
-    <button class="ghost" id="again" type="button">처음부터 다시 풀기</button>
-    <button class="ghost" id="closeEnd" type="button">닫기</button>
+    <div class="row">
+      <button class="ghost" id="again" type="button">처음부터 다시 풀기</button>
+      <button class="ghost" id="closeEnd" type="button">닫기</button>
+    </div>
   </div>
 </div>
 
@@ -660,6 +712,74 @@ function updateTrail(){
 }
 
 /* ================= 게임 ================= */
+/* 교사 현황판으로 실시간 전송 (구글 Apps Script) */
+const SHEET_URL=String(window.SHEET_URL||'').trim().startsWith('https://')?String(window.SHEET_URL).trim():'';
+function snapshot(ev,msg){
+  const tk=game.tk,now=Date.now(),cr=game.res[game.i]||{};
+  const away=awayFrom!=null&&tracking();
+  return{id:STU.id,name:STU.name,grade:STU.grade,cls:STU.cls,num:STU.num,ev:ev||'',msg:msg||'',
+    status:tk.endAt?'완료':away?'자리 비움':'풀이 중',away,awaySince:away?awayFrom:null,
+    mission:game.i+1,missionTag:(game.ms[game.i]||{}).tag||'',curSince:cr.t0||null,total:game.ms.length,
+    doneN:game.res.filter(r=>r.done).length,score:total(),max:MAXPTS(),
+    wrong:game.res.reduce((s,r)=>s+r.log.filter(l=>!l.ok).length,0),
+    awayN:tk.awayN,awayMs:tk.awayMs,start:game.start,endAt:tk.endAt||null,elapsedMs:(tk.endAt||now)-game.start,
+    ms:game.res.map(r=>({d:r.done?1:0,p:r.pts,w:r.log.filter(l=>!l.ok).length,h:r.hint?1:0,s:r.peek?1:0,t0:r.t0||null,t1:r.t1||null})),
+    sentAt:now};
+}
+let lastBeat=0;
+function report(ev,msg,beacon){
+  if(!SHEET_URL||!game||!STU)return;
+  let body;try{body=JSON.stringify(snapshot(ev,msg))}catch(e){return}
+  lastBeat=Date.now();
+  try{
+    if(beacon&&navigator.sendBeacon&&navigator.sendBeacon(SHEET_URL,new Blob([body],{type:'text/plain;charset=utf-8'})))return;
+    fetch(SHEET_URL,{method:'POST',mode:'no-cors',keepalive:true,headers:{'Content-Type':'text/plain;charset=utf-8'},body}).catch(()=>{});
+  }catch(e){}
+}
+
+/* 풀이 기록: 시작 시각, 걸린 시간, 이탈 횟수·시간 */
+const AWAY_MIN=2000;
+const pad2=n=>String(n).padStart(2,'0');
+const fmtDur=ms=>{ms=Math.max(0,ms|0);const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return h?`${h}시간 ${pad2(m)}분 ${pad2(x)}초`:`${m}분 ${pad2(x)}초`};
+const fmtClock=t=>{const d=new Date(t);return `${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`};
+const fmtDate=t=>{const d=new Date(t);return `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일`};
+const fmtDT=t=>{const d=new Date(t);return `${d.getFullYear()}.${pad2(d.getMonth()+1)}.${pad2(d.getDate())} ${fmtClock(t)}`};
+const newTk=()=>({awayN:0,awayMs:0,endAt:null,last:Date.now()});
+const allDone=()=>!!game&&game.res.every(r=>r.done);
+const tracking=()=>!!game&&!!STU&&!game.tk.endAt&&$('#loginSheet').hidden;
+let awayFrom=null;
+function awayStart(){
+  if(!tracking()||awayFrom!=null)return;const t0=awayFrom=Date.now();
+  if(document.hidden)report('이탈 시작','다른 화면으로 나감',true);
+  else setTimeout(()=>{if(awayFrom===t0&&tracking())report('이탈 시작','화면을 벗어남',document.hidden)},AWAY_MIN+100);
+}
+function awayEnd(){
+  if(awayFrom==null)return;const d=Date.now()-awayFrom;awayFrom=null;
+  if(!tracking()||d<AWAY_MIN)return;
+  game.tk.awayN++;game.tk.awayMs+=d;save();updateTrack();
+  report('복귀',`이탈 ${game.tk.awayN}회째 · ${fmtDur(d)}`);
+  const tt=$('#toast');tt.textContent=`화면 이탈 ${game.tk.awayN}회째 기록 (${fmtDur(d)})`;tt.style.background='var(--bad)';tt.hidden=false;
+  setTimeout(()=>{tt.hidden=true;tt.style.background=''},2600);
+}
+document.addEventListener('visibilitychange',()=>{document.hidden?awayStart():(document.hasFocus()?awayEnd():null)});
+window.addEventListener('blur',awayStart);
+window.addEventListener('focus',awayEnd);
+window.addEventListener('pagehide',()=>{if(game&&game.tk){game.tk.last=Date.now();saveLocal();if(tracking())report('나감','창을 닫거나 새로 고침',true)}});
+function updateTrack(){
+  const box=$('#track');if(!game||!STU){box.hidden=true;return}
+  box.hidden=false;const tk=game.tk,now=Date.now();
+  const away=tk.awayMs+(awayFrom!=null&&tracking()?Math.max(0,now-awayFrom):0);
+  $('#tStart').textContent=fmtDT(game.start);
+  $('#tElapsed').textContent=fmtDur((tk.endAt||now)-game.start);
+  $('#tAway').textContent=`${tk.awayN}회 · ${fmtDur(away)}`;
+  $('#tAwayWrap').classList.toggle('warn',tk.awayN>0);
+  const rc=$('#tRec');rc.textContent=tk.endAt?`✔ 완료 ${fmtClock(tk.endAt)}`:'● 기록 중';rc.classList.toggle('done',!!tk.endAt);
+  const rb=$('#resultBtn');rb.disabled=!allDone();rb.title=allDone()?'드론자격증을 발급해요':`${game.ms.length}개 미션을 모두 풀면 발급돼요`;
+}
+let beat=0;
+setInterval(()=>{if(!game||!STU)return;updateTrack();if(tracking()&&++beat%5===0){game.tk.last=Date.now();saveLocal()}
+  if(tracking()&&!document.hidden&&Date.now()-lastBeat>30000)report('')},1000);
+
 /* 방정식을 항 단위로 묶어 좁은 화면에서도 항이 잘리지 않고 줄바꿈되게 */
 const eqHTML=eq=>eq.split(/ (?=[+−=] )/).map(p=>`<span class="t">${p.replace(/^([+−=]) /,'$1\u00a0')}</span>`).join(' ');
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -697,27 +817,35 @@ async function pushRemote(rec){
       catch(e){const c=e&&e.code;if(c==='invalid_argument'||c==='not_granted'||c==='revoked'||c==='capability_disabled'||c==='capability_removed')dbOff=true;else if(c==='unavailable'){await new Promise(z=>setTimeout(z,800+Math.random()*800));dbPending=dbPending||r}}}
   }finally{dbBusy=false}
 }
+function recNow(){game.tk.last=Date.now();return{id:STU.id,name:STU.name,seed:game.seed,i:game.i,res:game.res,start:game.start,tk:game.tk,savedAt:Date.now()}}
+function saveLocal(){if(!game||!STU)return;try{localStorage.setItem(REC,JSON.stringify(recNow()))}catch(e){}}
 function save(){
   if(!game||!STU)return;
-  const rec={id:STU.id,name:STU.name,seed:game.seed,i:game.i,res:game.res,start:game.start,savedAt:Date.now()};
+  const rec=recNow();
   try{localStorage.setItem(REC,JSON.stringify(rec))}catch(e){}
   pushRemote(rec);
 }
 function newGame(seed,resume,recIn){
   R=mulberry32((seed*2654435761+2026)>>>0);
-  game={seed,ms:GENS.map(g=>g()),res:freshRes(),i:0,start:Date.now()};NOTES={};
+  game={seed,ms:GENS.map(g=>g()),res:freshRes(),i:0,start:Date.now(),tk:newTk()};NOTES={};awayFrom=null;
   let resumed=false;
   if(resume){const s=recIn===undefined?loadRec():recIn;
     if(s&&s.id===STU.id&&normName(s.name)===normName(STU.name)&&s.seed===seed&&Array.isArray(s.res)&&s.res.length===GENS.length){
-      game.res=s.res;game.i=s.i||0;game.start=s.start||game.start;resumed=s.res.some(r=>r.log&&r.log.length)}}
+      game.res=s.res;game.i=s.i||0;game.start=s.start||game.start;resumed=s.res.some(r=>r.log&&r.log.length);
+      game.tk=Object.assign(newTk(),s.tk||{});
+      if(!game.tk.endAt&&game.res.every(r=>r.done))game.tk.endAt=s.savedAt||Date.now();
+      /* 창을 닫았다가 다시 들어온 시간도 이탈로 기록 */
+      if(!game.tk.endAt&&s.tk&&s.tk.last){const gap=Date.now()-s.tk.last;if(gap>10000){game.tk.awayN++;game.tk.awayMs+=gap;game.tk.gapNote=true}}}}
   while(game.i>0&&!unlocked(game.i))game.i--;
   go(game.i);
-  if(resumed){const tt=$('#toast');tt.textContent='지난 기록을 이어서 풀어요';tt.hidden=false;setTimeout(()=>{tt.hidden=true},2200)}
+  updateTrack();save();
+  if(resumed){const tt=$('#toast');tt.textContent='지난 기록을 이어서 풀어요 (나가 있던 시간은 이탈로 기록돼요)';tt.hidden=false;setTimeout(()=>{tt.hidden=true},2600)}
 }
 const cur=()=>game.ms[game.i];
 const res=()=>game.res[game.i];
 function go(i){
   game.i=i;const m=cur(),r=res();
+  if(!r.t0&&!r.done)r.t0=Date.now();
   drone.anim=null;drone.trail=[];drone.crash=null;
   drone.pos=(r.done?m.target:m.start).slice();drone.carry=!r.done;
   $('#toast').hidden=true;
@@ -779,10 +907,10 @@ function refreshPanel(){
   if(r.peek||r.done)bx+=`<div class="box"><b>풀이</b><span class="m">${m.sol}</span></div>`;
   $('#boxes').innerHTML=bx;
   const last=game.i===game.ms.length-1;
-  $('#nextWrap').innerHTML=r.done?`<button class="next" id="nextBtn" type="button">${last?'결과 보기':'다음 미션 →'}</button>`:'';
-  const hb=$('#hintBtn');if(hb)hb.onclick=()=>{r.hint=true;refreshPanel();save()};
-  const sb=$('#solBtn');if(sb)sb.onclick=()=>{r.peek=true;r.hint=true;refreshPanel();save()};
-  const nb=$('#nextBtn');if(nb)nb.onclick=()=>{if(last)showEnd();else go(game.i+1)};
+  $('#nextWrap').innerHTML=r.done?`<button class="next" id="nextBtn" type="button">${last?(allDone()?'드론자격증 발급':'남은 미션 풀러 가기'):'다음 미션 →'}</button>`:'';
+  const hb=$('#hintBtn');if(hb)hb.onclick=()=>{r.hint=true;refreshPanel();save();report('힌트 열람',`${game.i+1}번 미션`)};
+  const sb=$('#solBtn');if(sb)sb.onclick=()=>{r.peek=true;r.hint=true;refreshPanel();save();report('풀이 열람',`${game.i+1}번 미션`)};
+  const nb=$('#nextBtn');if(nb)nb.onclick=()=>{if(last){if(allDone())showEnd();else go(game.res.findIndex(x=>!x.done))}else go(game.i+1)};
 }
 /* 수식 계산기: + − × ÷ / ^ ² ³ √ π 괄호, 곱셈 기호 생략 가능 */
 function evalExpr(src){
@@ -889,6 +1017,7 @@ function submit(e){
     closePad();
     drone.pos=m.start.slice();drone.trail=[];
     r.log.push({v:show(raw,g)+'칸',ok:near(g,m.ans)});save();
+    report(near(g,m.ans)?'정답':'오답',`${game.i+1}번 · ${show(raw,g)}칸`);
     if(near(g,m.ans))fly(m.target,success);
     else if(g<m.ans){
       const f=g/m.ans,mid=m.start.map((a,i)=>a+(m.target[i]-a)*f);
@@ -906,6 +1035,7 @@ function submit(e){
     const cTxt=raws.slice(0,3).some((s,i)=>s.trim()!==fmt(g[i]))?`(${raws.slice(0,3).map(s=>s.trim()).join(', ')}) = ${C(g)}`:C(g);
     const rTxt=m.ansR==null?'':`, r = ${show(raws[3],rv)}`;
     r.log.push({v:cTxt+rTxt,ok});save();
+    report(ok?'정답':'오답',`${game.i+1}번 · ${C(g)}${rTxt}`);
     const tgt=[Math.max(-4,Math.min(38,g[0])),Math.max(-10,Math.min(44,g[1])),Math.max(0,Math.min(14,g[2]))];
     fly(tgt,()=>{
       if(ok)success();
@@ -927,7 +1057,11 @@ function success(){
   r.fb=['ok',`배송 완료! +${r.pts}점`];
   pulse={p:cur().target.slice(),t0:performance.now()};
   const t=$('#toast');t.textContent=`배송 완료 +${r.pts}`;t.hidden=false;setTimeout(()=>{t.hidden=true},1800);
-  rebuildMarks();renderDots();refreshPanel();save();
+  r.t1=Date.now();
+  if(allDone()&&!game.tk.endAt){game.tk.endAt=Date.now();awayFrom=null}
+  report(allDone()?'전체 완료':'미션 완료',allDone()?`총점 ${total()} / ${MAXPTS()} · ${fmtDur(game.tk.endAt-game.start)}`:`${game.i+1}번 +${r.pts}점`);
+  rebuildMarks();renderDots();refreshPanel();save();updateTrack();
+  if(allDone())setTimeout(()=>{const tt=$('#toast');tt.textContent='모든 미션 완료! 드론자격증을 발급받으세요';tt.hidden=false;setTimeout(()=>{tt.hidden=true},2600)},1900);
 }
 function fly(to,done){
   const d=dist(drone.pos,to);
@@ -1051,6 +1185,7 @@ $('#loginForm').addEventListener('submit',async e=>{
   $('#loginSheet').hidden=true;
   getDl();
   newGame(p.seed,true,rec);
+  report('입장',game.res.some(x=>x.log.length)?`이어 풀기 · ${game.i+1}번 미션`:'새로 시작');
 });
 function showRecInfo(sIn){
   const s=sIn||loadRec(),el=$('#recInfo');
@@ -1061,7 +1196,7 @@ function showRecInfo(sIn){
   el.textContent=`이 기기에 저장된 기록: ${s.id} ${s.name} (${done}/${GENS.length} 완료). 같은 학번과 이름으로 들어오면 이어서 풀고, 다른 학번이나 이름으로 시작하면 이 기록은 지워져요.`;
   el.hidden=false;
 }
-$('#switchBtn').onclick=()=>{$('#sid').value='';$('#sname').value='';showRecInfo();$('#loginSheet').hidden=false;$('#sid').focus()};
+$('#switchBtn').onclick=()=>{if(game&&game.tk){awayFrom=null;saveLocal()}$('#sid').value='';$('#sname').value='';showRecInfo();$('#loginSheet').hidden=false;$('#sid').focus()};
 showRecInfo();
 loadRemote().then(r=>{const l=loadRec();if(r&&(!l||(r.savedAt||0)>(l.savedAt||0))&&!game)showRecInfo(r)});
 
@@ -1073,21 +1208,99 @@ const rankOf=tot=>{const lost=MAXPTS()-tot;return lost<=0?'전설의 에이스 �
 const rankMsg=tot=>{const lost=MAXPTS()-tot;return lost<=0?'만점! 모든 배송을 한 번에 해냈어요.':lost<=10?`${lost}점만 깎였어요. 거의 완벽한 비행이에요.`:'끝까지 해낸 것이 실력이에요. 틀린 문제의 풀이를 다시 확인해 보세요.'};
 function showEnd(){
   if(!game)return;
+  if(!allDone()){const tt=$('#toast');tt.textContent=`${game.ms.length}개 미션을 모두 풀어야 자격증이 발급돼요`;tt.hidden=false;setTimeout(()=>{tt.hidden=true},2200);return}
   const tot=total();
-  $('#total').innerHTML=`${tot}<small> / ${MAXPTS()}</small>`;
-  $('#rank').textContent=rankOf(tot);
-  $('#endWho').textContent=`${STU.grade}학년 ${STU.cls}반 ${STU.num}번 ${STU.name} · ${rankMsg(tot)}`;
-  $('#rows').innerHTML=game.ms.map((m,i)=>{const r=game.res[i];return `<li><span>${i+1}. ${m.tag}</span><span>${r.done?r.pts:'미완료'}</span></li>`}).join('');
+  $('#endWho').textContent=`${STU.grade}학년 ${STU.cls}반 ${STU.num}번 ${STU.name} · ${rankOf(tot)} · ${rankMsg(tot)}`;
   $('#pdfMsg').hidden=true;
   $('#endSheet').hidden=false;
+  renderPreview();
 }
+async function renderPreview(){
+  const wrap=$('#certPrev');wrap.innerHTML='';
+  try{if(document.fonts&&document.fonts.ready)await document.fonts.ready}catch(e){}
+  const c=buildCert();wrap.appendChild(c);
+  const fit=()=>{const s=wrap.clientWidth/1123;c.style.transform=`scale(${s})`;wrap.style.height=(794*s)+'px'};
+  fit();requestAnimationFrame(fit);
+}
+window.addEventListener('resize',()=>{const c=$('#certPrev .cert');if(c&&!$('#endSheet').hidden){const w=$('#certPrev'),s=w.clientWidth/1123;c.style.transform=`scale(${s})`;w.style.height=(794*s)+'px'}});
 $('#resultBtn').onclick=showEnd;
-$('#again').onclick=()=>{$('#endSheet').hidden=true;newGame(STU.seed,false)};
+$('#again').onclick=()=>{$('#endSheet').hidden=true;newGame(STU.seed,false);report('다시 시작','처음부터 다시 풀기');const tt=$('#toast');tt.textContent='새로 시작했어요. 시간 기록도 처음부터 다시 재요';tt.hidden=false;setTimeout(()=>{tt.hidden=true},2400)};
 $('#closeEnd').onclick=()=>{$('#endSheet').hidden=true};
 
 /* PDF 보고서 */
 let dlP=null;
 function getDl(){if(!dlP){try{dlP=window.claude&&window.claude.use?window.claude.use('downloads').catch(()=>null):Promise.resolve(null)}catch(e){dlP=Promise.resolve(null)}}return dlP}
+/* 직인: 기하 수업 수학쌤 */
+let SEAL=null;
+function makeSeal(){
+  if(SEAL)return SEAL;
+  const S=360,c=document.createElement('canvas');c.width=c.height=S;const g=c.getContext('2d');
+  const red='#C9252C',cx=S/2,cy=S/2;
+  g.strokeStyle=red;g.fillStyle=red;
+  g.lineWidth=16;g.beginPath();g.arc(cx,cy,S/2-14,0,Math.PI*2);g.stroke();
+  g.lineWidth=5;g.beginPath();g.arc(cx,cy,S/2-62,0,Math.PI*2);g.stroke();
+  const ring='김포제일고등학교 ★ 기하 수업 ★ ';const chars=[...ring];
+  g.font='700 34px "Gowun Batang","Gowun Dodum",serif';g.textAlign='center';g.textBaseline='middle';
+  chars.forEach((ch,i)=>{const a=-Math.PI/2+i*(Math.PI*2/chars.length);
+    g.save();g.translate(cx+Math.cos(a)*(S/2-39),cy+Math.sin(a)*(S/2-39));g.rotate(a+Math.PI/2);g.fillText(ch,0,0);g.restore()});
+  {let fs=92;do{g.font=`400 ${fs}px "Jua","Gowun Dodum",sans-serif`;fs-=2}while(g.measureText('수학쌤').width>S*0.5&&fs>30);g.fillText('수학쌤',cx,cy+2);}
+  g.font='700 28px "Gowun Batang",serif';g.fillText('之 印',cx,cy+64);g.font='700 26px "Gowun Batang",serif';g.fillText('기 하',cx,cy-62);
+  /* 도장 질감 */
+  g.globalCompositeOperation='destination-out';
+  let s=7;const rnd=()=>(s=(s*16807)%2147483647)/2147483647;
+  for(let i=0;i<1400;i++){g.globalAlpha=.25+rnd()*.6;g.beginPath();g.arc(rnd()*S,rnd()*S,rnd()*2.6,0,Math.PI*2);g.fill()}
+  for(let i=0;i<5;i++){g.globalAlpha=.18;g.lineWidth=2+rnd()*5;g.beginPath();const y=rnd()*S;g.moveTo(0,y);g.lineTo(S,y+(rnd()-.5)*60);g.stroke()}
+  g.globalAlpha=1;g.globalCompositeOperation='source-over';
+  return SEAL=c.toDataURL('image/png');
+}
+let EMBLEM=null;
+function makeEmblem(){
+  if(EMBLEM)return EMBLEM;
+  const S=220,c=document.createElement('canvas');c.width=c.height=S;const g=c.getContext('2d');
+  const navy='#1F3A5A',gold='#B08A3E';
+  g.fillStyle=navy;g.beginPath();g.arc(S/2,S/2,S/2-4,0,Math.PI*2);g.fill();
+  g.strokeStyle=gold;g.lineWidth=5;g.beginPath();g.arc(S/2,S/2,S/2-14,0,Math.PI*2);g.stroke();
+  g.strokeStyle='#F3E7C9';g.fillStyle='#F3E7C9';g.lineCap='round';
+  const cx=S/2,cy=S/2-6;
+  g.lineWidth=9;[[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([dx,dy])=>{g.beginPath();g.moveTo(cx,cy);g.lineTo(cx+dx*44,cy+dy*30);g.stroke()});
+  g.lineWidth=4;[[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([dx,dy])=>{g.beginPath();g.ellipse(cx+dx*44,cy+dy*30-6,26,7,0,0,Math.PI*2);g.stroke()});
+  g.beginPath();g.roundRect?g.roundRect(cx-20,cy-13,40,26,8):g.rect(cx-20,cy-13,40,26);g.fill();
+  g.fillStyle=gold;g.font='700 22px "IBM Plex Mono",monospace';g.textAlign='center';g.fillText('x  y  z',cx,cy+68);
+  return EMBLEM=c.toDataURL('image/png');
+}
+function certNo(){let h=2166136261;for(const ch of STU.id+STU.name+game.start){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)}
+  return `KJG-${new Date(game.tk.endAt||Date.now()).getFullYear()}-${STU.id}-${(h>>>0).toString(36).toUpperCase().slice(-4).padStart(4,'0')}`}
+function buildCert(){
+  const tot=total(),tk=game.tk,end=tk.endAt||Date.now();
+  const wrong=game.res.reduce((s,r)=>s+r.log.filter(l=>!l.ok).length,0);
+  const hints=game.res.filter(r=>r.hint).length,peeks=game.res.filter(r=>r.peek).length;
+  const el=document.createElement('div');el.className='cert';
+  el.innerHTML=`<div class="frame"></div><div class="frame2"></div>
+  <div class="in">
+    <div class="top"><img src="${makeEmblem()}" alt="">
+      <div class="tt"><div class="en">DRONE PILOT LICENSE · KIMPO JEIL HIGH SCHOOL</div><h1>드론 조종 자격증</h1></div>
+      <div class="no">자격번호<b>${certNo()}</b>공간좌표 배송 과정</div></div>
+    <div class="mid">
+      <div><div class="cap">조종사 정보</div><table>
+        <tr><th>성명</th><td style="font-size:20px">${esc(STU.name)}</td></tr>
+        <tr><th>학번</th><td class="mono">${STU.id}</td></tr>
+        <tr><th>소속</th><td>김포제일고등학교 ${STU.grade}학년 ${STU.cls}반 ${STU.num}번</td></tr>
+        <tr><th>자격 등급</th><td class="grade">${rankOf(tot)}</td></tr>
+        <tr><th>총점</th><td class="mono" style="font-size:18px">${tot} / ${MAXPTS()}</td></tr></table></div>
+      <div><div class="cap">비행 기록</div><table>
+        <tr><th>시작 시각</th><td class="mono">${fmtDT(game.start)}</td></tr>
+        <tr><th>완료 시각</th><td class="mono">${fmtDT(end)}</td></tr>
+        <tr><th>걸린 시간</th><td class="mono">${fmtDur(end-game.start)} <span style="font-weight:400;color:#6A5A3A;font-family:'Gowun Batang',serif">(순수 풀이 ${fmtDur(end-game.start-tk.awayMs)})</span></td></tr>
+        <tr><th>이탈</th><td class="mono">${tk.awayN}회 · ${fmtDur(tk.awayMs)}</td></tr>
+        <tr><th>오답 · 도움</th><td class="mono">오답 ${wrong}회 · 힌트 ${hints} · 풀이 ${peeks}</td></tr></table></div>
+    </div>
+    <div class="ms">${game.ms.map((m,i)=>{const r=game.res[i];return `<div class="m"><b>${i+1}. ${m.tag}</b><span>${r.pts}</span><small>오답 ${r.log.filter(l=>!l.ok).length}회${r.peek?' · 풀이':''}</small></div>`}).join('')}</div>
+    <p class="stmt">위 사람은 김포제일고 공간좌표 드론 배송 과정의 ${game.ms.length}개 비행 미션을 모두 완수하여<br>가상의 3차원 좌표공간에서 드론을 조종할 수 있는 능력을 갖추었으므로 이 자격증을 수여합니다.</p>
+    <div class="bot"><div class="date">${fmtDate(end)}</div>
+      <div class="issuer"><small>김포제일고등학교</small>기하 수업 수학쌤 <span class="in2">(인)</span><img src="${makeSeal()}" alt="수학쌤 직인"></div></div>
+  </div>`;
+  return el;
+}
 function buildReport(){
   const box=$('#report');box.innerHTML='';
   const now=new Date(),d=`${now.getFullYear()}. ${now.getMonth()+1}. ${now.getDate()}. ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
@@ -1097,9 +1310,11 @@ function buildReport(){
   let body=newPage();
   const place=html=>{const w=document.createElement('div');w.innerHTML=html;const el=w.firstElementChild;body.appendChild(el);
     if(body.scrollHeight>body.clientHeight+1&&body.children.length>1){el.remove();body=newPage();body.appendChild(el)}};
-  place(`<div><div class="sub">김포제일고 · 기하 · 공간좌표 미션</div><h1>드론 배송 결과 보고서</h1></div>`);
+  place(`<div><div class="sub">김포제일고 · 기하 · 공간좌표 미션</div><h1>비행 일지 · 자격 심사 기록</h1></div>`);
   place(`<table><tr><th>학번</th><td class="mono">${STU.id}</td><th>이름</th><td>${esc(STU.name)}</td></tr>
-    <tr><th>학년 · 반 · 번호</th><td>${STU.grade}학년 ${STU.cls}반 ${STU.num}번</td><th>작성 일시</th><td>${d}</td></tr></table>`);
+    <tr><th>학년 · 반 · 번호</th><td>${STU.grade}학년 ${STU.cls}반 ${STU.num}번</td><th>자격번호</th><td class="mono">${certNo()}</td></tr>
+    <tr><th>시작 · 완료</th><td class="mono">${fmtDT(game.start)} → ${fmtDT(game.tk.endAt||Date.now())}</td><th>걸린 시간</th><td class="mono">${fmtDur((game.tk.endAt||Date.now())-game.start)}</td></tr>
+    <tr><th>이탈</th><td class="mono">${game.tk.awayN}회 · ${fmtDur(game.tk.awayMs)}</td><th>발급 일시</th><td>${d}</td></tr></table>`);
   place(`<div class="kpis"><div class="kpi"><b>총점</b><span>${tot} / ${MAXPTS()}</span></div><div class="kpi"><b>등급</b><span style="font-size:18px">${rankOf(tot)}</span></div><div class="kpi"><b>완료한 미션</b><span>${done} / ${game.ms.length}</span></div><div class="kpi"><b>한 번에 맞힌 미션</b><span>${first} / ${game.ms.length}</span></div></div>`);
   place(`<table><tr><th>미션</th><th>개념</th><th>오답</th><th>힌트</th><th>풀이 보기</th><th>점수</th></tr>${game.ms.map((m,i)=>{const r=game.res[i];
     return `<tr><td>${i+1}. ${esc(m.title)}</td><td>${m.tag}</td><td class="n">${r.log.filter(l=>!l.ok).length}회 (−${5*r.log.filter(l=>!l.ok).length})</td><td>${r.hint?'사용':'—'}</td><td>${r.peek?'봄':'—'}</td><td class="n">${r.done?r.pts:'미완료'}</td></tr>`}).join('')}</table>`);
@@ -1115,34 +1330,39 @@ function buildReport(){
       <div><span class="lbl2">정답</span><span class="mono">${ans}</span>${r.hint?' <span class="lbl2" style="margin-left:10px">힌트 사용</span>':''}${r.peek?' <span class="lbl2">풀이 봄</span>':''}</div>
       <div><span class="lbl2">풀이</span><span class="mono">${m.sol}</span></div></div>`);
   });
-  pages.forEach((p,i)=>{const f=p.querySelectorAll('.rp-foot span');f[0].textContent=`${STU.id} ${STU.name} · 김포제일고 드론 배송`;f[1].textContent=`${i+1} / ${pages.length}`});
+  pages.forEach((p,i)=>{const f=p.querySelectorAll('.rp-foot span');f[0].textContent=`${STU.id} ${STU.name} · 드론 조종 자격증 부록`;f[1].textContent=`비행 일지 ${i+1} / ${pages.length}`});
   return pages;
 }
 $('#pdfBtn').onclick=async()=>{
   const btn=$('#pdfBtn'),msg=$('#pdfMsg');
   const show=t=>{msg.textContent=t;msg.hidden=false};
   const downloads=await getDl();
+  if(!allDone()){show('모든 미션을 풀어야 발급돼요.');return}
   if(!window.jspdf||!window.html2canvas){show('PDF 도구를 불러오지 못했어요. 인터넷 연결을 확인하고 새로고침해 주세요.');return}
-  btn.disabled=true;btn.textContent='보고서 만드는 중…';msg.hidden=true;
+  btn.disabled=true;btn.textContent='자격증 만드는 중…';msg.hidden=true;
   try{
     if(document.fonts&&document.fonts.ready)await document.fonts.ready;
+    const rb=$('#report');
     const pages=buildReport();
-    const rb=$('#report');rb.style.left='0';rb.style.zIndex='-1';
-    const pdf=new window.jspdf.jsPDF({unit:'mm',format:'a4',orientation:'portrait'});
+    const cert=buildCert();rb.insertBefore(cert,rb.firstChild);
+    rb.style.left='0';rb.style.zIndex='-1';
+    const pdf=new window.jspdf.jsPDF({unit:'mm',format:'a4',orientation:'landscape'});
+    const cc=await window.html2canvas(cert,{scale:2,backgroundColor:'#FBF7EC',logging:false,useCORS:true});
+    pdf.addImage(cc.toDataURL('image/jpeg',0.93),'JPEG',0,0,297,210);
     for(let i=0;i<pages.length;i++){
       const c=await window.html2canvas(pages[i],{scale:2,backgroundColor:'#ffffff',logging:false,useCORS:true});
-      if(i)pdf.addPage();
+      pdf.addPage('a4','portrait');
       pdf.addImage(c.toDataURL('image/jpeg',0.92),'JPEG',0,0,210,297);
     }
     const blob=pdf.output('blob');
-    const fname=`드론배송_결과보고서_${STU.id}_${STU.name}.pdf`;
+    const fname=`드론자격증_${STU.id}_${STU.name}.pdf`;
     if(downloads)await downloads.save({filename:fname,data:blob});
     else{const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=fname;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)}
-    show('보고서를 저장했어요.');
+    show('드론 자격증을 저장했어요. 1쪽은 자격증, 다음 쪽부터는 미션별 풀이 기록(비행 일지)이에요.');
   }catch(err){
     const c=err&&err.code;
-    show(c==='declined'?'저장을 취소했어요. 다시 누르면 받을 수 있어요.':c==='rate_limited'?'저장 창이 이미 열려 있어요. 잠시 뒤 다시 눌러 주세요.':'보고서를 만들지 못했어요. 다시 눌러 주세요.');
-  }finally{btn.disabled=false;btn.textContent='결과 보고서 PDF 받기';const rb=$('#report');rb.innerHTML='';rb.style.left='';rb.style.zIndex=''}
+    show(c==='declined'?'저장을 취소했어요. 다시 누르면 받을 수 있어요.':c==='rate_limited'?'저장 창이 이미 열려 있어요. 잠시 뒤 다시 눌러 주세요.':'자격증을 만들지 못했어요. 다시 눌러 주세요.');
+  }finally{btn.disabled=false;btn.textContent='드론 자격증 PDF 받기';const rb=$('#report');rb.innerHTML='';rb.style.left='';rb.style.zIndex=''}
 };
 
 requestAnimationFrame(frame);
