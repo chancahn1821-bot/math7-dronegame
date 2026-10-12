@@ -749,9 +749,8 @@ const allDone=()=>!!game&&game.res.every(r=>r.done);
 const tracking=()=>!!game&&!!STU&&!game.tk.endAt&&$('#loginSheet').hidden;
 let awayFrom=null;
 function awayStart(){
-  if(!tracking()||awayFrom!=null)return;const t0=awayFrom=Date.now();
-  if(document.hidden)report('이탈 시작','다른 화면으로 나감',true);
-  else setTimeout(()=>{if(awayFrom===t0&&tracking())report('이탈 시작','화면을 벗어남',document.hidden)},AWAY_MIN+100);
+  if(!tracking()||awayFrom!=null)return;awayFrom=Date.now();
+  report('이탈 시작','다른 앱·탭으로 나감',true);
 }
 function awayEnd(){
   if(awayFrom==null)return;const d=Date.now()-awayFrom;awayFrom=null;
@@ -761,9 +760,9 @@ function awayEnd(){
   const tt=$('#toast');tt.textContent=`화면 이탈 ${game.tk.awayN}회째 기록 (${fmtDur(d)})`;tt.style.background='var(--bad)';tt.hidden=false;
   setTimeout(()=>{tt.hidden=true;tt.style.background=''},2600);
 }
-document.addEventListener('visibilitychange',()=>{document.hidden?awayStart():(document.hasFocus()?awayEnd():null)});
-window.addEventListener('blur',awayStart);
-window.addEventListener('focus',awayEnd);
+/* 이탈 = 다른 앱·탭으로 가서 이 화면이 실제로 가려졌을 때만.
+   (태블릿 키보드·수식 키패드·주소창을 만지는 것만으로는 이탈로 세지 않아요) */
+document.addEventListener('visibilitychange',()=>{document.visibilityState==='hidden'?awayStart():awayEnd()});
 window.addEventListener('pagehide',()=>{if(game&&game.tk){game.tk.last=Date.now();saveLocal();if(tracking())report('나감','창을 닫거나 새로 고침',true)}});
 function updateTrack(){
   const box=$('#track');if(!game||!STU){box.hidden=true;return}
