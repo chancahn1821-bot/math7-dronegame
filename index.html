@@ -362,6 +362,12 @@ const fmt=n=>(Math.round(n*1000)/1000).toString().replace('-','−');
 const C=p=>`(${p.map(fmt).join(', ')})`;
 const dist=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1],a[2]-b[2]);
 const sq=p=>p[0]*p[0]+p[1]*p[1]+p[2]*p[2];
+/* 난이도 맞추기: 모든 반이 '계산은 해야 하지만 어렵지 않은' 수준이 되도록 */
+let LOOSE=0;
+const allDiff=(A,B)=>A.every((v,i)=>v!==B[i]);
+const gap=(A,B,kxy,kz)=>Math.abs(A[0]-B[0])>=kxy&&Math.abs(A[1]-B[1])>=kxy&&Math.abs(A[2]-B[2])>=kz;
+const isO=p=>p[0]===0&&p[1]===0&&p[2]===0;   /* 정문(원점)은 계산이 너무 쉬워져서 주어진 점에서 뺌 */
+const notLM=p=>!LM.some(l=>same(l[1],p));
 const same=(a,b)=>a[0]===b[0]&&a[1]===b[1]&&a[2]===b[2];
 const add=(a,b,k=1)=>a.map((v,i)=>v+k*b[i]);
 function pairs(){const P=[];for(let i=0;i<LM.length;i++)for(let j=0;j<LM.length;j++)if(i!==j)P.push([LM[i],LM[j]]);return shuffle(P)}
@@ -379,7 +385,7 @@ function gDist(){
   const tops=shuffle(LM.filter(l=>l[1][2]>0));
   for(const [an,A] of tops){
     const c=[];const dz=A[2];
-    for(let dx=-24;dx<=24;dx++)for(let dy=-24;dy<=24;dy++){const s=dx*dx+dy*dy+dz*dz,d=Math.round(Math.sqrt(s));if(d*d===s&&d>=6&&dx&&dy){const B=[A[0]+dx,A[1]+dy,0];if(okPt(B))c.push([B,d])}}
+    for(let dx=-24;dx<=24;dx++)for(let dy=-24;dy<=24;dy++){const s=dx*dx+dy*dy+dz*dz,d=Math.round(Math.sqrt(s));if(d*d===s&&d>=9&&d<=21&&Math.abs(dx)>=2&&Math.abs(dy)>=2&&Math.abs(dx)!==Math.abs(dy)){const B=[A[0]+dx,A[1]+dy,0];if(okPt(B))c.push([B,d])}}
     if(c.length){const[B,D]=pick(c);
       return{tag:'두 점 사이의 거리',title:'배터리 충전',
         story:`A(${an})에서 출발해 ${areaName(B)}에 있는 배송 지점 B까지 직선으로 날아가요. 드론은 거리 1칸을 날 때마다 배터리 1칸을 써요.`,
@@ -392,7 +398,8 @@ function gDist(){
 function gMid(){
   for(const strict of[true,false])for(const[[an,A],[bn,B]]of pairs()){
     if(A.some((v,i)=>(v+B[i])%2))continue;const M=A.map((v,i)=>(v+B[i])/2);
-    if(!okPt(M)||dist(A,B)<7||(strict&&(A[2]===B[2]||M[2]===0)))continue;
+    if(!okPt(M)||dist(A,B)<7)continue;
+    if(strict&&!(gap(A,B,3,2)&&M[2]>0&&notLM(M)&&!isO(A)&&!isO(B)))continue;if(!strict)LOOSE++;
     return{tag:'선분의 중점',title:'와이파이 중계기',
       story:`A(${an})와 B(${bn}) 사이 신호가 약해요. 선분 AB의 정중앙에 드론으로 와이파이 중계기를 달아야 해요.`,
       pts:[['A',an,A],['B',bn,B]],segs:[['A','B']],
@@ -404,7 +411,8 @@ function gMid(){
 function gRev(){
   for(const strict of[true,false])for(const[[an,A],[mn,M]]of pairs()){
     const B=M.map((v,i)=>2*v-A[i]);
-    if(!okPt(B)||dist(A,M)<5||(strict&&A[2]===M[2]))continue;
+    if(!okPt(B)||dist(A,M)<5)continue;
+    if(strict&&!(gap(A,M,2,1)&&notLM(B)&&dist(A,M)<=16&&!isO(A)&&!isO(M)))continue;if(!strict)LOOSE++;
     return{tag:'중점의 활용',title:'수학 선생님의 메모',
       story:`수학 선생님 메모: “A(${an})와 내가 교구를 받을 곳 B의 딱 중간이 M(${mn})이야.” 메모만 보고 B로 수학 교구를 배달하세요.`,
       pts:[['A',an,A],['M',mn,M]],segs:[['A','M']],
@@ -414,11 +422,12 @@ function gRev(){
   }
 }
 function gIn(){
-  const RT=[[1,2],[2,1],[1,3],[3,1],[2,3],[3,2],[1,4],[4,1]];
+  const RT=[[1,2],[2,1],[1,3],[3,1],[2,3],[3,2]];
   for(const strict of[true,false])for(const[[an,A],[bn,B]]of pairs())for(const[m,n]of shuffle(RT.slice())){
     const k=m+n,d=B.map((v,i)=>v-A[i]);if(d.some(v=>v%k))continue;
     const P=A.map((v,i)=>v+m*d[i]/k);
-    if(!okPt(P)||dist(A,B)<7||(strict&&d[2]===0))continue;
+    if(!okPt(P)||dist(A,B)<7)continue;
+    if(strict&&!(d.every(v=>v!==0)&&notLM(P)&&!isO(A)&&!isO(B)))continue;if(!strict)LOOSE++;
     return{tag:'선분의 내분점',title:`${m} : ${n} 우유 상자 투하`,
       story:`급식 우유를 싣고 A(${an})에서 B(${bn})로 곧게 날아가는 중이에요. 선분 AB를 ${m} : ${n}${ro(n)} 내분하는 점 P에서 우유 상자를 내려야 해요.`,
       pts:[['A',an,A],['B',bn,B]],segs:[['A','B']],
@@ -447,7 +456,8 @@ function gCen(){
     const[[an,A],[bn,B],[cn,Cc]]=[LM[idx[a]],LM[idx[b]],LM[idx[c]]];
     const s=A.map((v,i)=>v+B[i]+Cc[i]);if(s.some(v=>v%3))continue;
     const G=s.map(v=>v/3);
-    if(!okPt(G)||dist(A,B)<6||dist(B,Cc)<6||dist(A,Cc)<6||(strict&&G[2]===0))continue;
+    if(!okPt(G)||dist(A,B)<6||dist(B,Cc)<6||dist(A,Cc)<6)continue;
+    if(strict){const P3=[A,B,Cc];if(G[2]===0||P3.some(isO)||G.some(v=>v===0)||[0,1,2].some(i=>P3[0][i]===P3[1][i]&&P3[1][i]===P3[2][i])||!notLM(G))continue}else LOOSE++;
     return{tag:'삼각형의 무게중심',title:'응원 드론 집결',
       story:`스포츠문화축제 응원 드론쇼! A(${an}), B(${bn}), C(${cn})에서 출발한 드론들이 삼각형 ABC의 무게중심 G에 모여야 해요.`,
       pts:[['A',an,A],['B',bn,B],['C',cn,Cc]],segs:[['A','B'],['B','C'],['C','A']],
@@ -460,7 +470,8 @@ function gAxis(){
   for(const strict of[true,false])for(const[[an,A],[bn,B]]of pairs()){
     if(A[1]===B[1])continue;const num=sq(B)-sq(A),den=2*(B[1]-A[1]);
     if(num%den)continue;const t=num/den;
-    if(t<-6||t>40||(strict&&A[2]===B[2]))continue;
+    if(t<-6||t>40)continue;
+    if(strict&&!(!isO(A)&&!isO(B)&&A[2]!==B[2]&&A[0]!==B[0]&&Math.abs(den)>=4&&t!==0&&2*t!==A[1]+B[1]))continue;if(!strict)LOOSE++;
     const P=[0,t,0];
     return{tag:'거리가 같은 점',title:'공평한 택배 보관함',
       story:`학교 앞 도로변이 바로 y축이에요. 도로변(y축) 위에 드론 택배 보관함 P를 세우는데, A(${an})와 B(${bn})에서 거리가 같아야 공평해요.`,
@@ -472,7 +483,7 @@ function gAxis(){
   }
 }
 function gSph(){
-  const [cn,c]=pick(LM.filter(l=>l[1][2]>0));   /* 스피커는 옥상·구름다리 위에 */
+  const [cn,c]=pick(LM.filter(l=>l[1][2]>0&&sq(l[1])<=250));   /* 상수항이 너무 커지지 않게(기존 1반 수준) */   /* 스피커는 옥상·구름다리 위에 */
   const r=ri(2,4),k=sq(c)-r*r;
   const [sn,S0]=pick(LM.filter(l=>l[1]!==c&&dist(l[1],c)>r+4));
   const lin=(v,x)=>v===0?'':(v>0?` − ${2*v}${x}`:` + ${-2*v}${x}`);
@@ -816,7 +827,7 @@ async function pushRemote(rec){
       catch(e){const c=e&&e.code;if(c==='invalid_argument'||c==='not_granted'||c==='revoked'||c==='capability_disabled'||c==='capability_removed')dbOff=true;else if(c==='unavailable'){await new Promise(z=>setTimeout(z,800+Math.random()*800));dbPending=dbPending||r}}}
   }finally{dbBusy=false}
 }
-function recNow(){game.tk.last=Date.now();return{id:STU.id,name:STU.name,seed:game.seed,i:game.i,res:game.res,start:game.start,tk:game.tk,savedAt:Date.now()}}
+function recNow(){game.tk.last=Date.now();return{sig:game.sig,id:STU.id,name:STU.name,seed:game.seed,i:game.i,res:game.res,start:game.start,tk:game.tk,savedAt:Date.now()}}
 function saveLocal(){if(!game||!STU)return;try{localStorage.setItem(REC,JSON.stringify(recNow()))}catch(e){}}
 function save(){
   if(!game||!STU)return;
@@ -826,10 +837,10 @@ function save(){
 }
 function newGame(seed,resume,recIn){
   R=mulberry32((seed*2654435761+2026)>>>0);
-  game={seed,ms:GENS.map(g=>g()),res:freshRes(),i:0,start:Date.now(),tk:newTk()};NOTES={};awayFrom=null;
+  game={seed,ms:GENS.map(g=>g()),res:freshRes(),i:0,start:Date.now(),tk:newTk()};game.sig=game.ms.map(m=>JSON.stringify([m.ans,m.ansR||0,m.pts.map(p=>p[2])])).join('|');NOTES={};awayFrom=null;
   let resumed=false;
   if(resume){const s=recIn===undefined?loadRec():recIn;
-    if(s&&s.id===STU.id&&normName(s.name)===normName(STU.name)&&s.seed===seed&&Array.isArray(s.res)&&s.res.length===GENS.length){
+    if(s&&s.id===STU.id&&normName(s.name)===normName(STU.name)&&s.seed===seed&&s.sig===game.sig&&Array.isArray(s.res)&&s.res.length===GENS.length){
       game.res=s.res;game.i=s.i||0;game.start=s.start||game.start;resumed=s.res.some(r=>r.log&&r.log.length);
       game.tk=Object.assign(newTk(),s.tk||{});
       if(!game.tk.endAt&&game.res.every(r=>r.done))game.tk.endAt=s.savedAt||Date.now();
